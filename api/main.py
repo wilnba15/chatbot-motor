@@ -5,23 +5,28 @@ import json
 
 app = FastAPI()
 
-# Cargar el flujo desde el JSON
+# Cargar flujo desde JSON
 with open("flujo_conversacional_motor.json", "r", encoding="utf-8") as f:
     flujo = json.load(f)
 
-# Simulación de estado conversacional (en producción usar base de datos o redis)
 estado_usuario = {}
 
 class Mensaje(BaseModel):
     usuario_id: str
     mensaje: str
 
+# Función auxiliar para devolver mensaje de un nodo
+def obtener_mensaje(nodo):
+    if "mensaje" in nodo and "opciones" in nodo:
+        texto_opciones = "\n".join([f"{op['opcion']}. {op['texto']}" for op in nodo["opciones"]])
+        return f"{nodo['mensaje']}\n{texto_opciones}"
+    return nodo.get("mensaje", "")
+
 @app.post("/api/chat")
 def responder_mensaje(msg: Mensaje):
     usuario_id = msg.usuario_id
     mensaje = msg.mensaje.strip().lower()
 
-    # Estado inicial
     if usuario_id not in estado_usuario:
         estado_usuario[usuario_id] = "inicio"
 
@@ -29,24 +34,25 @@ def responder_mensaje(msg: Mensaje):
     nodo = flujo.get(estado_actual)
 
     if not nodo:
-        return {"respuesta": "Lo siento, algo salió mal."}
+        return {"respuesta": "❌ Algo salió mal. Intenta nuevamente."}
 
     siguientes = nodo.get("siguientes", {})
     opciones = nodo.get("opciones", [])
 
-    # Si hay opciones, verificar por número
+    # Manejo de opciones numéricas
     if opciones:
         for op in opciones:
             if mensaje == op["opcion"]:
                 siguiente_estado = op["siguiente"]
                 estado_usuario[usuario_id] = siguiente_estado
-                return {"respuesta": flujo[siguiente_estado]["mensaje"]}
+                return {"respuesta": obtener_mensaje(flujo[siguiente_estado])}
+        return {"respuesta": "❌ Opción no válida. Por favor, selecciona una opción del menú."}
 
-    # Si es texto libre (ej. "listo" o "menú")
+    # Manejo de respuestas libres
     if mensaje in siguientes:
         siguiente_estado = siguientes[mensaje]
         estado_usuario[usuario_id] = siguiente_estado
-        return {"respuesta": flujo[siguiente_estado]["mensaje"]}
+        return {"respuesta": obtener_mensaje(flujo[siguiente_estado])}
 
-    # Si no coincide, repetir nodo actual
-    return {"respuesta": nodo["mensaje"]}
+    # Si no se reconoce entrada
+    return {"respuesta": "❌ Opción no válida. Por favor, intenta de nuevo o escribe 'menú'."}
