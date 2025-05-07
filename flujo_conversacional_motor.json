@@ -1,6 +1,6 @@
 {
     "inicio": {
-        "mensaje": "👋 ¡Hola! Soy el asistente virtual de Motor en Ventas. ¿En qué te gustaría que te apoye hoy?",
+        "mensaje": "👋 ¡Hola! Soy el asistente virtual de Motor en Ventas. ¿En qué te gustaría que te apoye hoy?\nSelecciona una opción del menú:\n1. Conocer nuestros servicios\n2. Agendar asesoría gratuita\n3. Ver promociones y precios\n4. Descargar contenidos útiles\n5. Hablar con un asesor humano",
         "opciones": [
             {
                 "opcion": "1",
@@ -37,7 +37,7 @@
         }
     },
     "agenda": {
-        "mensaje": "¡Perfecto! Por favor, compárteme:\n- Nombre completo\n- Teléfono\n- Correo\n- Especialidad o Giro\n- Fecha y hora deseada\n\n📍 Asesorías presenciales en Xalapa o por Google Meet.\nCuando completes tus datos, escribe: 'listo'.",
+        "mensaje": "📅 ¡Perfecto! Por favor, compárteme:\n- Nombre completo\n- Teléfono\n- Correo\n- Especialidad o Giro\n- Fecha y hora deseada\n\n📍 Asesorías presenciales en Xalapa o por Google Meet.\nCuando completes tus datos, escribe: 'listo'.",
         "siguientes": {
             "listo": "gracias"
         }
