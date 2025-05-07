@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Asistente Motor en Ventas</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
+        #chatbox { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; background: #fff; }
+        .user { color: blue; margin: 5px 0; }
+        .bot { color: green; margin: 5px 0; }
+        input, button { padding: 10px; font-size: 1em; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>🤖 Asistente Virtual - Motor en Ventas</h2>
+    <div id="chatbox"></div>
+    <input type="text" id="mensaje" placeholder="Escribe tu mensaje..." />
+    <button onclick="enviar()">Enviar</button>
+
+    <script>
+        const chatbox = document.getElementById('chatbox');
+        const usuario_id = "demo123";
+
+        function agregarMensaje(texto, clase) {
+            const p = document.createElement("p");
+            p.textContent = texto;
+            p.className = clase;
+            chatbox.appendChild(p);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        async function enviar() {
+            const mensaje = document.getElementById('mensaje').value;
+            if (!mensaje.trim()) return;
+
+            agregarMensaje("Tú: " + mensaje, "user");
+            document.getElementById('mensaje').value = "";
+
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario_id, mensaje })
+            });
+
+            const data = await res.json();
+            agregarMensaje("Bot: " + data.respuesta, "bot");
+        }
+    </script>
+</body>
+</html>
