@@ -60,3 +60,5 @@ def responder_mensaje(msg: Mensaje):
         return {"respuesta": obtener_mensaje(flujo[siguiente_estado])}
 
     return {"respuesta": "❌ Opción no válida. Por favor, intenta de nuevo o escribe 'menú'."}
+
+# para forzar redeploy
