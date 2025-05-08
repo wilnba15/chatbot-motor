@@ -15,11 +15,8 @@ class Mensaje(BaseModel):
     usuario_id: str
     mensaje: str
 
-# Obtener texto completo de un nodo, incluyendo opciones si las hay
+# Corregido: No duplicamos el menú si ya está incluido en el mensaje
 def obtener_mensaje(nodo):
-    if "mensaje" in nodo and "opciones" in nodo:
-        texto_opciones = "\n".join([f"{op['opcion']}. {op['texto']}" for op in nodo["opciones"]])
-        return f"{nodo['mensaje']}\n{texto_opciones}"
     return nodo.get("mensaje", "")
 
 @app.post("/api/chat")
@@ -60,5 +57,3 @@ def responder_mensaje(msg: Mensaje):
         return {"respuesta": obtener_mensaje(flujo[siguiente_estado])}
 
     return {"respuesta": "❌ Opción no válida. Por favor, intenta de nuevo o escribe 'menú'."}
-
-# actualización mínima para forzar redeploy
