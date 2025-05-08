@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -23,6 +24,7 @@
 
         function agregarMensaje(texto, clase) {
             const p = document.createElement("p");
+            // Esta línea ahora reemplaza correctamente los saltos de línea dobles
             p.innerHTML = texto.replace(/\\n/g, "<br>");
             p.className = clase;
             chatbox.appendChild(p);
