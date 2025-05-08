@@ -57,7 +57,6 @@ def responder_mensaje(msg: Mensaje):
     estado_actual = estado_usuario[uid]
 
     if estado_actual.startswith("form_"):
-        # Guardar respuesta y pasar al siguiente campo
         idx = next((i for i, (k, _) in enumerate(formulario_campos) if k == estado_actual), None)
         if idx is not None:
             campo_key = formulario_campos[idx][0].replace("form_", "")
@@ -68,11 +67,10 @@ def responder_mensaje(msg: Mensaje):
                 estado_usuario[uid] = siguiente_estado
                 return {"respuesta": pregunta}
             else:
-                # Guardar y finalizar
                 guardar_csv(datos_usuario[uid])
                 estado_usuario[uid] = "inicio"
                 datos_usuario.pop(uid, None)
-                return {"respuesta": "✅ ¡Gracias! Hemos registrado tu asesoría. Si deseas volver al inicio, escribe 'menú' o 'salir'."}
+                return {"respuesta": "✅ ¡Gracias! Hemos registrado tu asesoría. Si deseas salir, escribe 'menú' o 'salir'."}
 
     nodo = flujo.get(estado_actual)
     if not nodo:
