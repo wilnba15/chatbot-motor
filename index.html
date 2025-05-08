@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Asistente Motor en Ventas</title>
+    <title>Asistente Virtual - Motor en Ventas</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f2f2f2; }
         #chatbox { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; background: #fff; }
         .user { color: blue; margin: 5px 0; }
         .bot { color: green; margin: 5px 0; }
@@ -24,7 +23,7 @@
 
         function agregarMensaje(texto, clase) {
             const p = document.createElement("p");
-            p.textContent = texto;
+            p.innerHTML = texto.replace(/\\n/g, "<br>");
             p.className = clase;
             chatbox.appendChild(p);
             chatbox.scrollTop = chatbox.scrollHeight;
