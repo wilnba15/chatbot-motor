@@ -61,4 +61,4 @@ def responder_mensaje(msg: Mensaje):
 
     return {"respuesta": "❌ Opción no válida. Por favor, intenta de nuevo o escribe 'menú'."}
 
-# para forzar redeploy
+# actualización mínima para forzar redeploy
