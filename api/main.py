@@ -45,7 +45,6 @@ def responder_mensaje(msg: Mensaje):
     uid = msg.usuario_id
     texto = msg.mensaje.strip()
 
-    # Palabras para reiniciar
     if texto.lower() in ["hola", "menú", "menu", "inicio", "empezar", "salir"]:
         estado_usuario[uid] = "inicio"
         datos_usuario.pop(uid, None)
@@ -67,9 +66,10 @@ def responder_mensaje(msg: Mensaje):
                 estado_usuario[uid] = siguiente_estado
                 return {"respuesta": pregunta}
             else:
+                # Último campo completado
                 guardar_csv(datos_usuario[uid])
-                estado_usuario[uid] = "inicio"
                 datos_usuario.pop(uid, None)
+                estado_usuario[uid] = "inicio"
                 return {"respuesta": "✅ ¡Gracias! Hemos registrado tu asesoría. Si deseas salir, escribe 'menú' o 'salir'."}
 
     nodo = flujo.get(estado_actual)
