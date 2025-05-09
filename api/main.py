@@ -1,9 +1,9 @@
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 import json
 import csv
 from datetime import datetime
+import os
 
 app = FastAPI()
 
@@ -25,12 +25,12 @@ class Mensaje(BaseModel):
     usuario_id: str
     mensaje: str
 
-def obtener_mensaje(nodo):
-    return nodo.get("mensaje", "")
-
 def guardar_csv(datos):
+    file_exists = os.path.isfile("asesorias.csv")
     with open("asesorias.csv", "a", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
+        if not file_exists:
+            writer.writerow(["Nombre", "Teléfono", "Correo", "Especialidad", "Fecha", "Timestamp"])
         writer.writerow([
             datos.get("nombre", ""),
             datos.get("telefono", ""),
@@ -39,6 +39,9 @@ def guardar_csv(datos):
             datos.get("fecha", ""),
             datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         ])
+
+def obtener_mensaje(nodo):
+    return nodo.get("mensaje", "")
 
 @app.post("/api/chat")
 def responder_mensaje(msg: Mensaje):
@@ -66,7 +69,10 @@ def responder_mensaje(msg: Mensaje):
                 estado_usuario[uid] = siguiente_estado
                 return {"respuesta": pregunta}
             else:
-                guardar_csv(datos_usuario[uid])
+                try:
+                    guardar_csv(datos_usuario[uid])
+                except Exception as e:
+                    return {"respuesta": f"❌ Error al guardar los datos: {str(e)}"}
                 datos_usuario.pop(uid, None)
                 estado_usuario[uid] = "inicio"
                 mensaje_cierre = "✅ ¡Gracias! Hemos registrado tu asesoría. Si deseas salir, escribe 'menú' o 'salir'."
