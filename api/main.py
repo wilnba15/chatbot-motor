@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import json
+import os
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -25,18 +26,28 @@ class Mensaje(BaseModel):
     usuario_id: str
     mensaje: str
 
-def guardar_en_sheets(datos):
+def obtener_credenciales_desde_entorno():
     try:
+        creds_dict = json.loads(os.environ["GOOGLE_CREDENTIALS"])
         scope = [
             "https://spreadsheets.google.com/feeds",
             "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive.file",
             "https://www.googleapis.com/auth/drive"
         ]
-        creds = ServiceAccountCredentials.from_json_keyfile_name("credenciales.json", scope)
-        client = gspread.authorize(creds)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        return creds
+    except Exception as e:
+        print(f"❌ Error cargando las credenciales del entorno: {e}")
+        return None
 
-        sheet = client.open("Asesorias Chatbot").sheet1  # nombre de la hoja
+def guardar_en_sheets(datos):
+    try:
+        creds = obtener_credenciales_desde_entorno()
+        if not creds:
+            return
+        client = gspread.authorize(creds)
+        sheet = client.open("Asesorias Chatbot").sheet1
         fila = [
             datos.get("nombre", ""),
             datos.get("telefono", ""),
