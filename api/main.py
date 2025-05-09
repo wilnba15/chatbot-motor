@@ -1,23 +1,21 @@
 import os
 import json
-import gspread
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from google.oauth2 import service_account
-from fastapi.responses import HTMLResponse
+from pyairtable import Table
 
-# === Autenticación con Google Sheets ===
-credenciales_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-if credenciales_json:
-    info = json.loads(credenciales_json)
-    creds = service_account.Credentials.from_service_account_info(info)
-    client = gspread.authorize(creds)
-    sheet = client.open("Asesorias Chatbot").worksheet("Asesorias Chatbot")
+# === Configuración Airtable ===
+AIRTABLE_TOKEN = os.getenv("AIRTABLE_TOKEN")
+BASE_ID = os.getenv("AIRTABLE_BASE_ID")
+TABLE_NAME = "Tasks"
+
+if AIRTABLE_TOKEN and BASE_ID:
+    airtable = Table(AIRTABLE_TOKEN, BASE_ID, TABLE_NAME)
 else:
-    sheet = None
+    airtable = None
 
-# === Configurar FastAPI ===
+# === Configuración FastAPI ===
 app = FastAPI()
 
 app.add_middleware(
@@ -32,10 +30,8 @@ app.add_middleware(
 class Mensaje(BaseModel):
     mensaje: str
 
-# === Flujo de conversación ===
 estado_usuario = {}
 datos_usuario = {}
-espera_confirmacion = {}
 
 flujos = {
     "inicio": "Hola, soy tu asistente virtual, ¿en qué te puedo ayudar hoy? 1. Conocer nuestros servicios 2. Agendar una asesoría gratuita",
@@ -47,22 +43,16 @@ flujos = {
     "agendar_fecha": "¿Qué fecha y hora prefieres para la asesoría?",
 }
 
-@app.post("/api/chat")
+@app.post("/chat")
 async def responder_mensaje(mensaje: Mensaje):
-    uid = "usuario1"  # identificador estático para pruebas
+    uid = "usuario1"
     texto = mensaje.mensaje.lower()
-
-@app.get("/", response_class=HTMLResponse)
-def home():
-    return "<h1>API activa</h1>"
-
 
     if uid not in estado_usuario:
         estado_usuario[uid] = "inicio"
 
     estado = estado_usuario[uid]
 
-    # FLUJO
     if texto in ["1", "uno"] and estado == "inicio":
         return {"respuesta": flujos["servicios"]}
 
@@ -72,35 +62,36 @@ def home():
         return {"respuesta": flujos["agendar_nombre"]}
 
     elif estado == "agendar_nombre":
-        datos_usuario[uid]["nombre"] = mensaje.mensaje
+        datos_usuario[uid]["Nombre"] = mensaje.mensaje
         estado_usuario[uid] = "agendar_telefono"
         return {"respuesta": flujos["agendar_telefono"]}
 
     elif estado == "agendar_telefono":
-        datos_usuario[uid]["telefono"] = mensaje.mensaje
+        datos_usuario[uid]["Telefono"] = mensaje.mensaje
         estado_usuario[uid] = "agendar_correo"
         return {"respuesta": flujos["agendar_correo"]}
 
     elif estado == "agendar_correo":
-        datos_usuario[uid]["correo"] = mensaje.mensaje
+        datos_usuario[uid]["Email"] = mensaje.mensaje
         estado_usuario[uid] = "agendar_especialidad"
         return {"respuesta": flujos["agendar_especialidad"]}
 
     elif estado == "agendar_especialidad":
-        datos_usuario[uid]["especialidad"] = mensaje.mensaje
+        datos_usuario[uid]["Especialidad"] = mensaje.mensaje
         estado_usuario[uid] = "agendar_fecha"
         return {"respuesta": flujos["agendar_fecha"]}
 
     elif estado == "agendar_fecha":
-        datos_usuario[uid]["fecha"] = mensaje.mensaje
-
-        if sheet:
-            valores = list(datos_usuario[uid].values())
-            sheet.append_row(valores)
-
+        datos_usuario[uid]["Fecha y Hora"] = mensaje.mensaje
+        if airtable:
+            try:
+                airtable.create(datos_usuario[uid])
+            except Exception as e:
+                print(f"❌ Error guardando en Airtable: {e}")
         estado_usuario[uid] = "inicio"
-        mensaje_menu = flujos["inicio"]
-        return {"respuesta": "✅ ¡Gracias! Hemos registrado tu asesoría. Si deseas salir, escribe 'menú' o 'salir'.\n\n" + mensaje_menu}
+        return {
+            "respuesta": "✅ ¡Gracias! Hemos registrado tu asesoría. Si deseas salir, escribe 'menú' o 'salir'.\n\n" + flujos["inicio"]
+        }
 
     elif texto in ["menu", "salir"]:
         estado_usuario[uid] = "inicio"
