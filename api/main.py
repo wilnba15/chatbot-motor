@@ -12,7 +12,6 @@ with open("flujo_conversacional_motor.json", "r", encoding="utf-8") as f:
 
 estado_usuario = {}
 datos_usuario = {}
-espera_confirmacion = {}
 
 formulario_campos = [
     ("form_nombre", "¿Cuál es tu nombre completo?"),
@@ -46,16 +45,9 @@ def responder_mensaje(msg: Mensaje):
     uid = msg.usuario_id
     texto = msg.mensaje.strip()
 
-    # Si hay espera de confirmación activa, reiniciar
-    if espera_confirmacion.get(uid):
-        espera_confirmacion.pop(uid)
-        estado_usuario[uid] = "inicio"
-        return {"respuesta": obtener_mensaje(flujo["inicio"])}
-
     if texto.lower() in ["hola", "menú", "menu", "inicio", "empezar", "salir"]:
         estado_usuario[uid] = "inicio"
         datos_usuario.pop(uid, None)
-        espera_confirmacion.pop(uid, None)
         return {"respuesta": obtener_mensaje(flujo["inicio"])}
 
     if uid not in estado_usuario:
@@ -76,10 +68,10 @@ def responder_mensaje(msg: Mensaje):
             else:
                 guardar_csv(datos_usuario[uid])
                 datos_usuario.pop(uid, None)
-                estado_usuario[uid] = "confirmacion"
-                espera_confirmacion[uid] = True
+                estado_usuario[uid] = "inicio"
                 mensaje_cierre = "✅ ¡Gracias! Hemos registrado tu asesoría. Si deseas salir, escribe 'menú' o 'salir'."
-                return {"respuesta": mensaje_cierre}
+                mensaje_menu = obtener_mensaje(flujo["inicio"])
+                return {"respuesta": f"{mensaje_cierre}\n\n{mensaje_menu}"}
 
     nodo = flujo.get(estado_actual)
     if not nodo:
