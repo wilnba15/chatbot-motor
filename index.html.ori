@@ -3,9 +3,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Asistente Virtual - Motor en Ventas</title>
+    <title>Asistente Motor en Ventas</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f2f2f2; }
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
         #chatbox { border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; background: #fff; }
         .user { color: blue; margin: 5px 0; }
         .bot { color: green; margin: 5px 0; }
@@ -24,7 +24,6 @@
 
         function agregarMensaje(texto, clase) {
             const p = document.createElement("p");
-            // Esta línea ahora reemplaza correctamente los saltos de línea dobles
             p.innerHTML = texto.replace(/\\n/g, "<br>");
             p.className = clase;
             chatbox.appendChild(p);
@@ -38,7 +37,7 @@
             agregarMensaje("Tú: " + mensaje, "user");
             document.getElementById('mensaje').value = "";
 
-            const res = await fetch('http://127.0.0.1:8000/api/chat', {
+            const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ usuario_id, mensaje })
